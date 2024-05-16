@@ -82,11 +82,12 @@ io.on('connection', (socket) => {
     // Добавление очков
     socket.on("addPoints", ({ activeUser, points }) => {
 
-        users.find(el => el.username == activeUser.username).points += +points
-
-        activeQuestion = null
-        userQueue = []
-        activeUser = null
+        if (activeUser) {
+            users.find((el) => el.username == activeUser.username).points += +points;
+            activeQuestion = null;
+			userQueue = [];
+			activeUser = null;
+        }
 
         // Возвращение обновленного списка игроков
         io.emit('newUserList', users)
