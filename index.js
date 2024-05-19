@@ -1,7 +1,6 @@
 import express from "express"
 import cors from "cors"
 import http from "http"
-import sqlite3 from 'sqlite3';
 import { Server } from 'socket.io';
 
 const corsOptions = {
@@ -29,7 +28,6 @@ let activeUser = null;
 let activeQuestion = null;
 
 const changeUser = () => {
-
     let index = userQueue.indexOf(activeUser) + 1
 
     if (index == userQueue.length) {
@@ -58,7 +56,6 @@ io.on('connection', (socket) => {
 
         }
 
-
         // Возвращает всех подключённых пользователей
         io.emit("all", users)
         io.emit("setActiveQuestion", activeQuestion)
@@ -69,13 +66,11 @@ io.on('connection', (socket) => {
 
         changeUser()
 
-        // Возвращает нового отвечающнго пользователя 
+        // Возвращает нового отвечающего пользователя 
         io.emit("newActiveUser", activeUser)
     })
 
     socket.on("closeQuestion", () => {
-        activeQuestion = null;
-
         io.emit("setActiveQuestion", activeQuestion)
     })
 
@@ -84,9 +79,7 @@ io.on('connection', (socket) => {
 
         if (activeUser) {
             users.find((el) => el.username == activeUser.username).points += +points;
-            activeQuestion = null;
 			userQueue = [];
-			activeUser = null;
         }
 
         // Возвращение обновленного списка игроков
@@ -125,13 +118,14 @@ io.on('connection', (socket) => {
 
     // Отключение от сервера
     socket.on('disconnect', () => {
+        activeQuestion = null;
         console.log('Отключились')
     })
 });
 
 
 // API
-app.get("/", (req, res) => {
+app.get("/", (res) => {
     res.send("API")
 })
 
