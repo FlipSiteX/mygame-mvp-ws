@@ -27,10 +27,12 @@ let userQueue = [];
 let activeUser = null;
 let activeQuestion = null;
 
+let lastAnsweredUser = null;
+
 const changeUser = () => {
 	let index = userQueue.indexOf(activeUser) + 1;
 
-	if (index == userQueue.length) {
+	if (index === userQueue.length) {
 		index = 0;
 		activeUser = userQueue[index];
 		return;
@@ -70,6 +72,7 @@ io.on("connection", (socket) => {
 
 	socket.on("closeQuestion", () => {
 		activeQuestion = null;
+		userQueue = [];
 		io.emit("setActiveQuestion", activeQuestion);
 	});
 
@@ -77,24 +80,34 @@ io.on("connection", (socket) => {
 	socket.on("addPoints", ({ activeUser, points }) => {
 		if (activeUser) {
 			users.find((el) => el.username == activeUser.username).points += +points;
+			lastAnsweredUser = users.find((el) => el.username == activeUser.username);
 			userQueue = [];
 		}
 
+		if (+points == 0) {
+		 	lastAnsweredUser = null;
+		}
+
 		// Возвращение обновленного списка игроков
-		io.emit("newUserList", users);
+		io.emit("newUserList", users, lastAnsweredUser);
 	});
 
 	//Переназначение очков
-	socket.on("reassignPoints", ({ lastAnsweredUser, points }) => {
-		users.find((el) => el.username == lastAnsweredUser.username).points -=
-			+points;
+	socket.on("reassignPoints", ({ lastAnsweredUser, userToReass, points }) => {
+		if (lastAnsweredUser === null) {
+			users.find((el) => el.username == userToReass.username).points += +points;
+		} else {
+			users.find((el) => el.username == userToReass.username).points += +points;
+			users.find((el) => el.username == lastAnsweredUser.username).points -=
+				+points;
+		}
+
 		// Возвращение обновленного списка игроков
-		io.emit("newUserList", users);
+		io.emit("newUserList", users, userToReass);
 	});
 
-	// Выбор вопросы
+	// Выбор вопроса
 	socket.on("selectQuestion", (question) => {
-		userQueue = [];
 		activeQuestion = question;
 
 		// Возвращает выбранный вопрос на клиент
@@ -104,7 +117,7 @@ io.on("connection", (socket) => {
 	// Срабатывает когда пользователь жмёт на кнопку ответить
 	socket.on("answerQuestion", (user) => {
 		if (userQueue.find((el) => el.username == user.username)) {
-			console.log("11231231");
+			return;
 		}
 
 		userQueue.push(user);
@@ -112,11 +125,11 @@ io.on("connection", (socket) => {
 		if (!activeUser) {
 			activeUser = userQueue[0];
 
-			// Возвращает нового отвечающнго пользователя
+			// Возвращает нового отвечающего пользователя
 			io.emit("getActiveUser", activeUser);
 		}
 
-		// Возвращает список нажавших на кнопук пользоватлей
+		// Возвращает список нажавших на кнопку пользователей
 		io.emit("getQueue", userQueue);
 	});
 
@@ -127,7 +140,7 @@ io.on("connection", (socket) => {
 });
 
 // API
-app.get("/", (res) => {
+app.get("/", res => {
 	res.send("API");
 });
 
