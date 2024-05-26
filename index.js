@@ -141,7 +141,7 @@ io.on("connection", (socket) => {
 				points: user.points,
 			};
 		});
-		await axios.post('ссылка', mappedUsers);
+		await axios.post('http://192.168.10.53:7171/user/points', mappedUsers);
 	});
 
 	// Отключение от сервера
