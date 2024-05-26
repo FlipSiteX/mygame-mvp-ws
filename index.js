@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
+import axios from 'axios';
 
 const corsOptions = {
 	origin: "*",
@@ -131,6 +132,16 @@ io.on("connection", (socket) => {
 
 		// Возвращает список нажавших на кнопку пользователей
 		io.emit("getQueue", userQueue);
+	});
+
+	socket.on("endGame", async (users) => {
+		const mappedUsers = users.map((user) => {
+			return {
+				teamName: user.username,
+				points: user.points,
+			};
+		});
+		await axios.post('ссылка', mappedUsers);
 	});
 
 	// Отключение от сервера
