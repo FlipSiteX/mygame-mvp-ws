@@ -141,7 +141,13 @@ io.on("connection", (socket) => {
 				points: user.points,
 			};
 		});
-		await axios.post('http://192.168.10.53:7171/user/points', mappedUsers);
+
+		try {
+			await axios.post('http://192.168.10.53:7171/user/points', mappedUsers);
+		} catch (e) {
+			console.log('Ошибка отправки POST запроса на сервер');
+		}
+		
 	});
 
 	// Отключение от сервера
