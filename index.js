@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
-import axios from 'axios';
+import axios from "axios";
 
 const corsOptions = {
 	origin: "*",
@@ -79,14 +79,12 @@ io.on("connection", (socket) => {
 
 	// Добавление очков
 	socket.on("addPoints", ({ activeUser, points }) => {
-		if (activeUser) {
+		if (activeUser && +points) {
 			users.find((el) => el.username == activeUser.username).points += +points;
 			lastAnsweredUser = users.find((el) => el.username == activeUser.username);
 			userQueue = [];
-		}
-
-		if (+points == 0) {
-		 	lastAnsweredUser = null;
+		} else {
+			lastAnsweredUser = null;
 		}
 
 		// Возвращение обновленного списка игроков
@@ -143,11 +141,10 @@ io.on("connection", (socket) => {
 		});
 
 		try {
-			await axios.post('http://192.168.10.53:7171/user/points', mappedUsers);
+			await axios.post("http://192.168.10.53:7171/user/points", mappedUsers);
 		} catch (e) {
-			console.log('Ошибка отправки POST запроса на сервер');
+			console.log("Ошибка отправки POST запроса на сервер");
 		}
-		
 	});
 
 	// Отключение от сервера
@@ -157,7 +154,7 @@ io.on("connection", (socket) => {
 });
 
 // API
-app.get("/", res => {
+app.get("/", (res) => {
 	res.send("API");
 });
 
